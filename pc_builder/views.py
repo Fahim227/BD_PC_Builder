@@ -16,6 +16,7 @@ from urllib import request as rqst
 
 @api_view(['POST'])
 def home(request):
+    # taking "https://www.startech.com.bd/component/" from app
     component_name = request.POST.get('componentName')
     valid = validators.url(component_name)
     print(valid)
@@ -25,6 +26,7 @@ def home(request):
     baseurl = "https://www.startech.com.bd/component/"
     # baseurl+str(component_name).lower()/// baseurl+str(component_name)
     print()
+    # passing the url
     return HttpResponse(scrapcomponents(component_name))
     
 @api_view(['POST'])
@@ -65,8 +67,9 @@ def scrapcomponents(baseurl):
 def brands(request):
     component_name = request.POST.get('componentName')
     print(component_name)
-    baseurl = "https://www.startech.com.bd/component/"
+    # baseurl = "https://www.startech.com.bd/component/"
     # baseurl+str(component_name).lower()
+    # component_name is mainly the url like "https://www.startech.com.bd/component/ram"
     page = rqst.urlopen(component_name)
     soup = BeautifulSoup(page, "html.parser")
 
@@ -92,6 +95,7 @@ def brands(request):
 def brandscomponents(request):
     casing = "https://www.startech.com.bd/component/casing"
     processor = "https://www.startech.com.bd/component/processor"
+    # url from app to fetch the brand name and link
     brand_url = request.POST.get('brandurl')
     page = rqst.urlopen(brand_url)
     soup = BeautifulSoup(page, "html.parser")
