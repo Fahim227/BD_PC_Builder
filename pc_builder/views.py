@@ -1,4 +1,3 @@
-
 from django.http import response
 from rest_framework import serializers
 from pc_builder.models import userinfos
@@ -10,24 +9,40 @@ from rest_framework.response import Response
 from .serializers import RegisterSerializer
 from bs4 import BeautifulSoup
 import json
+import validators
 from urllib import request as rqst
 
 # Create your views here.
 
-@api_view(['GET'])
+@api_view(['POST'])
 def home(request):
+    component_name = request.POST.get('componentName')
+    valid = validators.url(component_name)
+    print(valid)
+    # brand_name = request.data.get('brandName')
+    print(component_name)
+    # if valid==False:
+    baseurl = "https://www.startech.com.bd/component/"
+    # baseurl+str(component_name).lower()/// baseurl+str(component_name)
+    print()
+    return HttpResponse(scrapcomponents(component_name))
     
-    # print(request.META['SERVER_PORT'])
-    baseurl = "https://www.startech.com.bd/component"
-    return HttpResponse(scrapcomponents(baseurl))
+@api_view(['POST'])
+def fetchbybrands(request):
+    component_name = request.POST.get('brandurl')
+
+    baseurl = "https://www.startech.com.bd/component/"
+
+    return HttpResponse()
+
 
 def scrapcomponents(baseurl):
     page = rqst.urlopen(baseurl)
     soup = BeautifulSoup(page, "html.parser")
-
     main_contents = soup.find("div", {"class": "row main-content"})
     list_of_home_contents = main_contents.findAll("div", {"class": "product-thumb"})
     context = []
+
 
     for content in list_of_home_contents:
         image = content.find(class_="img-holder").find("img")
@@ -46,22 +61,41 @@ def scrapcomponents(baseurl):
     return context_json
 
 
-@api_view(['GET'])
-def brandscomponents(request):
-    casing = "https://www.startech.com.bd/component/casing"
-    processor = "https://www.startech.com.bd/component/processor"
-    page = rqst.urlopen(casing)
+@api_view(['POST'])
+def brands(request):
+    component_name = request.POST.get('componentName')
+    print(component_name)
+    baseurl = "https://www.startech.com.bd/component/"
+    # baseurl+str(component_name).lower()
+    page = rqst.urlopen(component_name)
     soup = BeautifulSoup(page, "html.parser")
 
     container = soup.find("div", {"class": "child-list"})
     brands = container.findAll('a')
-    antec = "antec"
-    brandurl = ""
+    brand_list = []
     for brand in brands:
-        if str(brand.get_text()).lower() == antec:
-            brandurl = brand['href']
+        brand_with_link = {
+            "name" : brand.get_text(),
+            "link" : brand['href']
+        }
+        brand_list.append(brand_with_link)
 
-    return HttpResponse(scrapcomponents(brandurl))
+    brand_json = {
+        "brands": brand_list
+    }
+    brand_json = json.dumps(brand_json)
+    return HttpResponse(brand_json)
+
+
+
+@api_view(['POST'])
+def brandscomponents(request):
+    casing = "https://www.startech.com.bd/component/casing"
+    processor = "https://www.startech.com.bd/component/processor"
+    brand_url = request.POST.get('brandurl')
+    page = rqst.urlopen(brand_url)
+    soup = BeautifulSoup(page, "html.parser")
+    return HttpResponse(scrapcomponents(brand_url))
 
 
 
@@ -129,13 +163,15 @@ def login(request):
 "password" : "*******"
 }"""
 
-@api_view(['GET'])
+@api_view(['POST'])
 def componentsdeatils(request):
     gpu = "https://www.startech.com.bd/colorful-geforce-gt710-2gd3-v-graphics-card"
     fan = "https://www.startech.com.bd/corsair-ll120-rgb-dual-light-loop"
     hdd = "https://www.startech.com.bd/toshiba-p300-1tb-internal-hard-drive"
     casing = "https://www.startech.com.bd/xtreme-320-1-casing"
-    page = rqst.urlopen(hdd)
+    url = request.POST.get('url')
+    print(url)
+    page = rqst.urlopen(url)
     soup = BeautifulSoup(page, "html.parser")
 
     container = soup.find("div", {"class": "row clearfix"})
@@ -151,7 +187,9 @@ def componentsdeatils(request):
         features.append(lis.get_text())
 
     description = soup.find("section", {"id": "description"})
-    desc = description.find('p').get_text()
+    # desc = description.find('p').get_text()
+    desc = description.find("div" , {"itemprop": "description"})
+    print(desc.get_text())
 
     # print(features)
     mainjson = []
@@ -162,9 +200,9 @@ def componentsdeatils(request):
         "name": name,
         "price": price,
         "features": features,
-        "description": desc
+        "description": desc.get_text()
     }
     mainjson.append(con)
-    jformat = json.dumps(mainjson)
+    jformat = json.dumps(con)
     return HttpResponse(jformat)
 
