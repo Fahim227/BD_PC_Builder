@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css">
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+
+</head>
+
+<body>
+    <div class="container">
+
+        <div class="row mt-5">
+
+            <div class="col-md-8 offset-md-2">
+
+                <div class="card">
+                    <div class="card-header shadow-sm bg-white">
+
+                        <h1 class="display-5 text-info"><i class="fas fa-check-double"> Register</i></h1>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group">
+
+                            <li class="list-group-item">
+                                <form action="{% url 'register' %}" method="post" autocomplete="off">
+                                    {% csrf_token %}
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" id="formGroupExampleInput" placeholder="Username" name="name">
+                                    </div>
+                                    <div class="form-group">
+
+                                        <!--<input type="text" class="form-control" id="formGroupExampleInput2" placeholder="Content" name="content">-->
+                                        <input type="text" class="form-control" id="formGroupExampleInput" placeholder="Email" name="email">
+                                    </div>
+                                    <div class="form-group">
+
+                                        <!--<input type="text" class="form-control" id="formGroupExampleInput2" placeholder="Content" name="content">-->
+                                        <input type="password" class="form-control" id="formGroupExampleInput" placeholder="Password" name="password">
+
+                                    </div>
+                                    <div class="form-group">
+
+                                        <!--<input type="text" class="form-control" id="formGroupExampleInput2" placeholder="Content" name="content">-->
+                                        <input type="password" class="form-control" id="formGroupExampleInput" placeholder="Confirm Password" name="conpassword">
+                                    </div>
+                                    <div class="input-group-append text-info" style="margin-left: 300px;">
+
+
+                                        <span class="input-group-text bg-white py-0">
+                                            <button class="btn btn-sm text-info">
+                                                <input type="submit" class="fadeIn fourth" value="Register">
+                                            </button>
+                                        </span>
+
+                                    </div>
+                                </form>
+
+                            </li>
+
+                        </ul>
+
+
+
+                        </ul>
+
+                    </div>
+
+                    {% for message in messages %}
+                    <div class="card alert alert-danger " role="alert"> {{message}}</div>
+
+
+                    {% endfor %}
+
+
+
+
+                </div>
+
+
+            </div>
+        </div>
+
+
+
+
+    </div>
+
+
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
+
+
+</body>
+
+</html>

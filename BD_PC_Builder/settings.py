@@ -25,7 +25,7 @@ SECRET_KEY = '0j9#pxu+3y(htzxw6qt5xv+dab##3ch3rt!d(55=kyz#pbx-$f'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['192.168.0.108']
 
 
 # Application definition
@@ -55,10 +55,10 @@ MIDDLEWARE = [
     
 ]
 
-CORS_ALLOWED_ORIGINS = [
+"""CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
     "http://192.168.56.1:8000"
-]
+]"""
 ROOT_URLCONF = 'BD_PC_Builder.urls'
 
 TEMPLATES = [
@@ -126,7 +126,7 @@ USE_L10N = True
 
 USE_TZ = True
 
-
+CORS_ORIGIN_ALLOW_ALL = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 

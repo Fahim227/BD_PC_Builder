@@ -1,8 +1,8 @@
 from django.http import response
 from rest_framework import serializers
-from pc_builder.models import userinfos
+from pc_builder.models import Shopsinfo, user_cart, userinfos
 from django.http.response import HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -16,7 +16,6 @@ from urllib import request as rqst
 
 @api_view(['POST'])
 def home(request):
-    # taking "https://www.startech.com.bd/component/" from app
     component_name = request.POST.get('componentName')
     valid = validators.url(component_name)
     print(valid)
@@ -26,7 +25,6 @@ def home(request):
     baseurl = "https://www.startech.com.bd/component/"
     # baseurl+str(component_name).lower()/// baseurl+str(component_name)
     print()
-    # passing the url
     return HttpResponse(scrapcomponents(component_name))
     
 @api_view(['POST'])
@@ -67,9 +65,8 @@ def scrapcomponents(baseurl):
 def brands(request):
     component_name = request.POST.get('componentName')
     print(component_name)
-    # baseurl = "https://www.startech.com.bd/component/"
+    baseurl = "https://www.startech.com.bd/component/"
     # baseurl+str(component_name).lower()
-    # component_name is mainly the url like "https://www.startech.com.bd/component/ram"
     page = rqst.urlopen(component_name)
     soup = BeautifulSoup(page, "html.parser")
 
@@ -95,7 +92,6 @@ def brands(request):
 def brandscomponents(request):
     casing = "https://www.startech.com.bd/component/casing"
     processor = "https://www.startech.com.bd/component/processor"
-    # url from app to fetch the brand name and link
     brand_url = request.POST.get('brandurl')
     page = rqst.urlopen(brand_url)
     soup = BeautifulSoup(page, "html.parser")
@@ -175,6 +171,10 @@ def componentsdeatils(request):
     casing = "https://www.startech.com.bd/xtreme-320-1-casing"
     url = request.POST.get('url')
     print(url)
+    jformat = json.dumps(components_in_details(url))
+    return HttpResponse(jformat)
+
+def components_in_details(url):
     page = rqst.urlopen(url)
     soup = BeautifulSoup(page, "html.parser")
 
@@ -196,7 +196,7 @@ def componentsdeatils(request):
     print(desc.get_text())
 
     # print(features)
-    mainjson = []
+    # mainjson = []
 
 
     con = {
@@ -206,7 +206,81 @@ def componentsdeatils(request):
         "features": features,
         "description": desc.get_text()
     }
-    mainjson.append(con)
-    jformat = json.dumps(con)
-    return HttpResponse(jformat)
+    # mainjson.append(con)
+    
+    return con
 
+
+@api_view(['POST'])
+def add_to_cart(request):
+    save_to_cart = user_cart(user_id=request.POST.get('userid'),shop_id=request.POST.get('shopid'),item_link=request.POST.get('produrl'),quantity=request.POST.get('quantity'))
+    save_to_cart.save()
+    res = {
+        'success' : True,
+        'message' : "Saved Successfully"
+    }
+    res_json = json.dumps(res)
+    return HttpResponse(res_json)
+
+
+@api_view(['POST'])
+def get_cart_components(request):
+    # id = request.POST.get('userID')
+    com_obj = user_cart.objects.filter(user_id=request.POST.get('userID'))
+    details=[]
+    for com in com_obj:
+        con = components_in_details(com.item_link)
+        details.append(con)
+    
+    jshow = json.dumps(details)
+    return HttpResponse(jshow)
+
+def insertshop(request):
+    new_shop = Shopsinfo(shopename=request.POST['shopname'],shopaddress=request.POST['webadd'],shopimgaddress=request.POST['imgadd'])
+    new_shop.save()
+    return redirect('/bdpcbuilderapi/allshops/')
+
+def allshops(request):
+    shops = Shopsinfo.objects.all
+    context ={
+         'all_shop' : shops
+
+    }
+    return render(request, 'pc_builder/list.html',context)
+
+@api_view(['GET'])
+def allshopsAPI(request):
+    shops = Shopsinfo.objects.all()
+    context = []
+    for shop in shops:
+        shopdetails = {
+            "shop_name" : shop.shopename,
+            "shop_address" : shop.shopaddress,
+            "shop_img" : shop.shopimgaddress,
+            "shop_id" : shop.id
+        }
+        context.append(shopdetails)
+    shops_json = json.dumps(context)
+    return HttpResponse(shops_json)
+
+def editshop(request,shopid):
+    getShop = Shopsinfo.objects.get(id=shopid)
+    context = {
+        "shop_name" : getShop.shopename,
+        "shop_address" : getShop.shopaddress,
+        "shop_img" : getShop.shopimgaddress,
+        "shop_id" : getShop.id
+    }
+    if request.method == 'POST':
+        getShop.shopename=request.POST['shopname']
+        getShop.shopaddress=request.POST['webadd']
+        getShop.shopimgaddress=request.POST['imgadd']
+        getShop.save()
+        return redirect('/bdpcbuilderapi/allshops/')
+    else:
+        return render(request, 'pc_builder/edit.html',context)
+
+def deleteshop(request,shopid):
+    getShop = Shopsinfo.objects.get(id=shopid)
+    getShop.delete()
+    return redirect('/bdpcbuilderapi/allshops/')

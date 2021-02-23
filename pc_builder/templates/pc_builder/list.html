@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computer Shops</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css">
+
+</head>
+
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
+            <a class="navbar-brand" href="#">Shop List</a>
+
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <div class="row mt-5">
+
+            <div class="col-md-8 offset-md-2">
+
+                <div class="card">
+
+                    <div class="card-header shadow-sm bg-white">
+
+                        <h1 class="display-5 text-info"><i class="fa-bars"> List of Shops</i></h1>
+
+
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group">
+
+                            <li class="list-group-item">
+                                <form action="{% url 'addshop' %}" method="post" autocomplete="off">
+                                    {% csrf_token %}
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" id="formGroupExampleInput" placeholder="Shop Name" name="shopname">
+                                    </div>
+                                    <div class="form-group">
+
+                                        <!--<input type="text" class="form-control" id="formGroupExampleInput2" placeholder="Content" name="content">-->
+                                        <textarea class="form-control" tabindex="4" placeholder="Write shop address" name="webadd" required></textarea>
+                                    </div>
+                                    <div class="form-group">
+
+                                        <!--<input type="text" class="form-control" id="formGroupExampleInput2" placeholder="Content" name="content">-->
+                                        <textarea class="form-control" tabindex="4" placeholder="Write shop Image address" name="imgadd" required></textarea>
+                                    </div>
+                                    <div class="input-group-append text-info" style="margin-left: 300px;">
+
+
+                                        <span class="input-group-text bg-white py-0">
+                                            <button class="btn btn-sm text-info">
+                                                <i class="fa fa-plus-circle fa-lg">
+
+                                                </i>
+                                            </button>
+                                        </span>
+
+                                    </div>
+                                </form>
+                            </li>
+
+                        </ul>
+                        <ul class="list-group">
+                            {% for shop in all_shop %}
+
+
+                            <div class="list list-group-item" v-for="(todoList, index) in filterLists" :class="{ isStar: todoList.myStar, isEnd: todoList.status  }">
+                                <!--       <pre>{{todoList}}</pre> -->
+                                <div class="list-head" :class="{ done: todoList.status}">
+                                    <h3> {{ shop.shopename }} </h3>
+                                    <br>
+                                    <form action="{% url 'deleteshop' shop.id %}" class="float-right d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn">
+                                            <i class="far fa-trash-alt fa-lg text-danger float-right"></i>
+                                            
+                                        </button>
+
+
+                                    </form>
+                                    <form action="{% url 'editshop' shop.id %}" class="float-right d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn">
+                                            <i class="far fa-edit fa-lg text-danger float-right"></i>
+
+                                            </button>
+
+                                    </form>
+                                    <p> {{ shop.shopaddress }} </p>
+                                    <img src="{{ shop.shopimgaddress }}" style="background-color:black;padding:20px;" class="img-thumbnail">
+
+                                </div>
+
+                            </div>
+
+                            {% empty %}
+                            <li class="list-group-item">No Item</li>
+
+                            {% endfor %}
+
+
+                        </ul>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
+</body>
+
+</html>
