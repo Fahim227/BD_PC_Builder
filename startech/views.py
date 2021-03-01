@@ -1,32 +1,47 @@
-
 from django.http import response
 from rest_framework import serializers
-from pc_builder.models import userinfos
+from pc_builder.models import Shopsinfo, user_cart, userinfos
 from django.http.response import HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from pc_builder.serializers import RegisterSerializer
 from bs4 import BeautifulSoup
 import json
+import validators
 from urllib import request as rqst
-
 # Create your views here.
 
-@api_view(['GET'])
+
+@api_view(['POST'])
 def home(request):
+    component_name = request.POST.get('componentName')
+    valid = validators.url(component_name)
+    print(valid)
+    # brand_name = request.data.get('brandName')
+    print(component_name)
+    # if valid==False:
+    baseurl = "https://www.startech.com.bd/component/"
+    # baseurl+str(component_name).lower()/// baseurl+str(component_name)
+    return HttpResponse(scrapcomponents(component_name))
     
-    # print(request.META['SERVER_PORT'])
-    baseurl = "https://www.startech.com.bd/component"
-    return HttpResponse(scrapcomponents(baseurl))
+@api_view(['POST'])
+def fetchbybrands(request):
+    component_name = request.POST.get('brandurl')
+
+    baseurl = "https://www.startech.com.bd/component/"
+
+    return HttpResponse()
+
 
 def scrapcomponents(baseurl):
     page = rqst.urlopen(baseurl)
     soup = BeautifulSoup(page, "html.parser")
-
     main_contents = soup.find("div", {"class": "row main-content"})
     list_of_home_contents = main_contents.findAll("div", {"class": "product-thumb"})
     context = []
+
 
     for content in list_of_home_contents:
         image = content.find(class_="img-holder").find("img")
@@ -45,24 +60,142 @@ def scrapcomponents(baseurl):
     return context_json
 
 
-@api_view(['GET'])
-def brandscomponents(request):
-    casing = "https://www.startech.com.bd/component/casing"
-    processor = "https://www.startech.com.bd/component/processor"
-    page = rqst.urlopen(casing)
+@api_view(['POST'])
+def brands(request):
+    component_name = request.POST.get('componentName')
+    print(component_name)
+    baseurl = "https://www.startech.com.bd/component/casing"
+    # baseurl+str(component_name).lower()
+    page = rqst.urlopen(component_name)
     soup = BeautifulSoup(page, "html.parser")
 
     container = soup.find("div", {"class": "child-list"})
     brands = container.findAll('a')
-    antec = "antec"
-    brandurl = ""
+    brand_list = []
     for brand in brands:
-        if str(brand.get_text()).lower() == antec:
-            brandurl = brand['href']
-            break
+        brand_with_link = {
+            "name" : brand.get_text(),
+            "link" : brand['href']
+        }
+        brand_list.append(brand_with_link)
 
-    return HttpResponse(scrapcomponents(brandurl))
+    brand_json = {
+        "brands": brand_list
+    }
+    brand_json = json.dumps(brand_json)
+    return HttpResponse(brand_json)
 
+
+
+
+@api_view(['POST'])
+def brandsAndComponentsName(request):
+    burl = "https://"
+    name = request.POST.get('name')
+    print(name)
+    shopobj = Shopsinfo.objects.get(shopename=name)
+    url = shopobj.shopaddress
+    print(url)
+    url+="/component/"
+    burl+=url
+    print(burl)
+    baseurl = "https://www.startech.com.bd/component/"
+    # baseurl+str(component_name).lower()
+    page = rqst.urlopen(burl)
+    soup = BeautifulSoup(page, "html.parser")
+
+    container = soup.find("div", {"class": "child-list"})
+    brands = container.findAll('a')
+    brand_list = []
+    for brand in brands:
+        brand_with_link = {
+            "name" : brand.get_text(),
+            "link" : brand['href']
+        }
+        brand_list.append(brand_with_link)
+
+    brand_json = {
+        "brands": brand_list
+    }
+    brand_json = json.dumps(brand_json)
+    return HttpResponse(brand_json)
+
+
+
+#@api_view(['POST'])
+def brandscomponents(request):
+    casing = "https://www.startech.com.bd/component/casing"
+    processor = "https://www.startech.com.bd/component/processor"
+    # brand_url = request.POST.get('brandurl')
+    page = rqst.urlopen(processor)
+    soup = BeautifulSoup(page, "html.parser")
+    return HttpResponse(scrapcomponents(processor))
+
+
+
+@api_view(['POST'])
+def register(request):
+        serializer = RegisterSerializer(data=request.data)
+        responseData = {
+            "response" : "Successfully",
+             "boolean" : True
+        }
+        if serializer.is_valid():
+            serializer.save()
+            return Response(responseData)
+        else:
+            responseData = {
+                "response" : "UnSuccessfully",
+                "boolean" : False
+            }
+            return Response(responseData)
+        data ={
+                "username" : "Hello",
+                "email" : "fahim@gmail.com",
+                "password" : "*******"
+            }
+        return JsonResponse(data)
+
+@api_view(['POST'])
+def login(request):
+    email = request.data['email']
+    password = request.data['password']
+
+    checking={
+        "email" : email,
+        "password" : password
+
+    }
+    """ return Response(checking)"""
+
+    userauth = userinfos.objects.get(email=email)
+    context={}
+
+    if userauth is not None:
+        if userauth.password == password:
+            context ={
+            "user_id" : userauth.id,
+            "Auth" : True
+            }
+        else:
+          context ={
+             "Auth" : False,
+             "real" : userauth.password,
+             "given" : password
+
+           }
+        
+    else:
+        context ={
+            "Auth" : False
+        }
+    return Response(context)
+
+
+"""{
+"email" : "fahim@gmail.com",
+"password" : "*******"
+}"""
 
 @api_view(['POST'])
 def componentsdeatils(request):
@@ -70,8 +203,12 @@ def componentsdeatils(request):
     fan = "https://www.startech.com.bd/corsair-ll120-rgb-dual-light-loop"
     hdd = "https://www.startech.com.bd/toshiba-p300-1tb-internal-hard-drive"
     casing = "https://www.startech.com.bd/xtreme-320-1-casing"
-    url = request.POST.get('url',False)
+    url = request.POST.get('url')
     print(url)
+    jformat = json.dumps(components_in_details(url))
+    return HttpResponse(jformat)
+
+def components_in_details(url):
     page = rqst.urlopen(url)
     soup = BeautifulSoup(page, "html.parser")
 
@@ -93,7 +230,7 @@ def componentsdeatils(request):
     print(desc.get_text())
 
     # print(features)
-    mainjson = []
+    # mainjson = []
 
 
     con = {
@@ -103,7 +240,47 @@ def componentsdeatils(request):
         "features": features,
         "description": desc.get_text()
     }
-    mainjson.append(con)
-    jformat = json.dumps(con)
-    return HttpResponse(jformat)
+    # mainjson.append(con)
+    
+    return con
 
+
+@api_view(['POST'])
+def add_to_cart(request):
+    save_to_cart = user_cart(user_id=request.POST.get('userid'),shop_id=request.POST.get('shopid'),item_link=request.POST.get('produrl'),quantity=request.POST.get('quantity'))
+    save_to_cart.save()
+    res = {
+        'success' : True,
+        'message' : "Saved Successfully"
+    }
+    res_json = json.dumps(res)
+    return HttpResponse(res_json)
+
+
+@api_view(['POST'])
+def get_cart_components(request):
+    # id = request.POST.get('userID')
+    com_obj = user_cart.objects.filter(user_id=request.POST.get('userID'))
+    details=[]
+    for com in com_obj:
+        con = components_in_details(com.item_link)
+        details.append(con)
+    
+    jshow = json.dumps(details)
+    return HttpResponse(jshow)
+
+
+@api_view(['GET'])
+def allshopsAPI(request):
+    shops = Shopsinfo.objects.all()
+    context = []
+    for shop in shops:
+        shopdetails = {
+            "shop_name" : shop.shopename,
+            "shop_address" : shop.shopaddress,
+            "shop_img" : shop.shopimgaddress,
+            "shop_id" : shop.id
+        }
+        context.append(shopdetails)
+    shops_json = json.dumps(context)
+    return HttpResponse(shops_json)

@@ -11,6 +11,7 @@ urlpatterns = [
     path('componentdetails/', views.componentsdeatils, name='componentdetails'),
     path('brandscomponents/', views.brandscomponents, name='brandscomponents'),
     path('addtocart/', views.add_to_cart, name='addtocart'),
+    # devided fo startech
     path('get_cart_components/', views.get_cart_components, name='get_cart_components'),
     path('insertshop/',views.insertshop, name='addshop'),
     path('allshops/',views.allshops, name='allshops'),

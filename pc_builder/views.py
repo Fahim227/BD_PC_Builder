@@ -235,18 +235,6 @@ def get_cart_components(request):
     jshow = json.dumps(details)
     return HttpResponse(jshow)
 
-def insertshop(request):
-    new_shop = Shopsinfo(shopename=request.POST['shopname'],shopaddress=request.POST['webadd'],shopimgaddress=request.POST['imgadd'])
-    new_shop.save()
-    return redirect('/bdpcbuilderapi/allshops/')
-
-def allshops(request):
-    shops = Shopsinfo.objects.all
-    context ={
-         'all_shop' : shops
-
-    }
-    return render(request, 'pc_builder/list.html',context)
 
 @api_view(['GET'])
 def allshopsAPI(request):
@@ -262,6 +250,20 @@ def allshopsAPI(request):
         context.append(shopdetails)
     shops_json = json.dumps(context)
     return HttpResponse(shops_json)
+
+# For admin panel
+def insertshop(request):
+    new_shop = Shopsinfo(shopename=request.POST['shopname'],shopaddress=request.POST['webadd'],shopimgaddress=request.POST['imgadd'])
+    new_shop.save()
+    return redirect('/bdpcbuilderapi/allshops/')
+
+def allshops(request):
+    shops = Shopsinfo.objects.all
+    context ={
+         'all_shop' : shops
+
+    }
+    return render(request, 'pc_builder/list.html',context)
 
 def editshop(request,shopid):
     getShop = Shopsinfo.objects.get(id=shopid)
