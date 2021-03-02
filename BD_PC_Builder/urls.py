@@ -7,5 +7,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('bdpcbuilderapi/', include('pc_builder.urls')),
     path('startech/', include('startech.urls')),
-     path('techland/', include('techland.urls'))
+     path('techlandbd/', include('techland.urls'))
 ]
