@@ -11,6 +11,8 @@ from bs4 import BeautifulSoup
 import json
 import validators
 from urllib import request as rqst
+from startech.views import components_in_details as startechComDetails
+from techland.views import components_in_details as techlandComDetails
 
 # Create your views here.
 
@@ -213,7 +215,9 @@ def components_in_details(url):
 
 @api_view(['POST'])
 def add_to_cart(request):
-    save_to_cart = user_cart(user_id=request.POST.get('userid'),shop_id=request.POST.get('shopid'),item_link=request.POST.get('produrl'),quantity=request.POST.get('quantity'))
+    shop = Shopsinfo.objects.get(shopname = request.POST.get('shopName')) 
+    print(shop.id)
+    save_to_cart = user_cart(user_id=request.POST.get('userid'),shop_name = request.POST.get('shopName'),shop_id=shop.id,item_link=request.POST.get('produrl'),quantity=request.POST.get('quantity'))
     save_to_cart.save()
     res = {
         'success' : True,
@@ -229,9 +233,12 @@ def get_cart_components(request):
     com_obj = user_cart.objects.filter(user_id=request.POST.get('userID'))
     details=[]
     for com in com_obj:
-        con = components_in_details(com.item_link)
-        details.append(con)
-    
+        if com.item_link.find("startech") > -1:
+            con = startechComDetails(com.item_link)
+            details.append(con)
+        if com.item_link.find("techlandbd") > -1:
+            con = techlandComDetails(com.item_link)
+            details.append(con)
     jshow = json.dumps(details)
     return HttpResponse(jshow)
 
@@ -242,7 +249,7 @@ def allshopsAPI(request):
     context = []
     for shop in shops:
         shopdetails = {
-            "shop_name" : shop.shopename,
+            "shop_name" : shop.shopname,
             "shop_address" : shop.shopaddress,
             "shop_img" : shop.shopimgaddress,
             "shop_id" : shop.id

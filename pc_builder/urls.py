@@ -9,7 +9,7 @@ urlpatterns = [
     path('/register/', views.register, name='register'),
     path('/login/', views.login, name='login'),
     path('componentdetails/', views.componentsdeatils, name='componentdetails'),
-    path('brandscomponents/', views.brandscomponents, name='brandscomponents'),
+    # path('brandscomponents/', views.brandscomponents, name='brandscomponents'),
     path('addtocart/', views.add_to_cart, name='addtocart'),
     # devided fo startech
     path('get_cart_components/', views.get_cart_components, name='get_cart_components'),

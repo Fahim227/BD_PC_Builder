@@ -25,7 +25,7 @@ SECRET_KEY = '0j9#pxu+3y(htzxw6qt5xv+dab##3ch3rt!d(55=kyz#pbx-$f'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.0.108']
+ALLOWED_HOSTS = ['192.168.0.106']
 
 
 # Application definition
@@ -85,11 +85,11 @@ WSGI_APPLICATION = 'BD_PC_Builder.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'bd_pc_builder',
-        'USER' : 'postgres',
-        'PASSWORD' : '1234',
-        'HOST' : 'localhost'
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'BD_PC_BuilderV2',
+        'USER' : 'root',
+        'PASSWORD' : '',
+        'HOST' : '127.0.0.1'
     }
 }
 

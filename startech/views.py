@@ -1,3 +1,4 @@
+from os import truncate
 from django.http import response
 from rest_framework import serializers
 from pc_builder.models import Shopsinfo, user_cart, userinfos
@@ -16,15 +17,15 @@ from urllib import request as rqst
 
 @api_view(['POST'])
 def home(request):
-    component_name = request.POST.get('componentName')
-    valid = validators.url(component_name)
+    comUrl = request.POST.get('comUrl')
+    valid = validators.url(comUrl)
     print(valid)
     # brand_name = request.data.get('brandName')
-    print(component_name)
+    print(comUrl)
     # if valid==False:
     baseurl = "https://www.startech.com.bd/component/"
     # baseurl+str(component_name).lower()/// baseurl+str(component_name)
-    return HttpResponse(scrapcomponents(component_name))
+    return HttpResponse(scrapcomponents(comUrl))
     
 @api_view(['POST'])
 def fetchbybrands(request):
@@ -38,16 +39,16 @@ def fetchbybrands(request):
 def scrapcomponents(baseurl):
     page = rqst.urlopen(baseurl)
     soup = BeautifulSoup(page, "html.parser")
-    main_contents = soup.find("div", {"class": "row main-content"})
-    list_of_home_contents = main_contents.findAll("div", {"class": "product-thumb"})
+    main_contents = soup.find("div", {"class": "main-content"})
+    list_of_home_contents = main_contents.findAll("div", {"class": "p-item"})
     context = []
 
 
     for content in list_of_home_contents:
-        image = content.find(class_="img-holder").find("img")
-        name = content.find(class_="product-info").find(class_="product-name").find('a').get_text()
-        price = content.find(class_="actions").find(class_="price space-between").find('span').get_text()
-        urls = content.find(class_="img-holder").find("a")
+        image = content.find(class_="p-item-img").find("img")
+        name = content.find(class_="p-item-name").get_text()
+        price = content.find(class_="p-item-price").get_text()
+        urls = content.find(class_="p-item-name").find("a")
         con = {
             "images": image['src'],
             "name": name,
@@ -62,11 +63,11 @@ def scrapcomponents(baseurl):
 
 @api_view(['POST'])
 def brands(request):
-    component_name = request.POST.get('componentName')
-    print(component_name)
+    component_url = request.POST.get('comUrl')
+    print(component_url)
     baseurl = "https://www.startech.com.bd/component/casing"
     # baseurl+str(component_name).lower()
-    page = rqst.urlopen(component_name)
+    page = rqst.urlopen(component_url)
     soup = BeautifulSoup(page, "html.parser")
 
     container = soup.find("div", {"class": "child-list"})
@@ -90,7 +91,7 @@ def brands(request):
 
 @api_view(['POST'])
 def brandsAndComponentsName(request):
-    burl = "https://"
+    """burl = "https://"
     name = request.POST.get('name')
     print(name)
     shopobj = Shopsinfo.objects.get(shopename=name)
@@ -98,38 +99,36 @@ def brandsAndComponentsName(request):
     print(url)
     url+="/component/"
     burl+=url
-    print(burl)
+    print(burl)"""
     baseurl = "https://www.startech.com.bd/component/"
     # baseurl+str(component_name).lower()
-    page = rqst.urlopen(burl)
+    page = rqst.urlopen(baseurl)
     soup = BeautifulSoup(page, "html.parser")
 
     container = soup.find("div", {"class": "child-list"})
     brands = container.findAll('a')
-    brand_list = []
+    components_list = []
     for brand in brands:
         brand_with_link = {
             "name" : brand.get_text(),
             "link" : brand['href']
         }
-        brand_list.append(brand_with_link)
+        components_list.append(brand_with_link)
 
     brand_json = {
-        "brands": brand_list
+        "components": components_list
     }
     brand_json = json.dumps(brand_json)
     return HttpResponse(brand_json)
 
 
 
-#@api_view(['POST'])
+@api_view(['POST'])
 def brandscomponents(request):
     casing = "https://www.startech.com.bd/component/casing"
     processor = "https://www.startech.com.bd/component/processor"
-    # brand_url = request.POST.get('brandurl')
-    page = rqst.urlopen(processor)
-    soup = BeautifulSoup(page, "html.parser")
-    return HttpResponse(scrapcomponents(processor))
+    brand_url = request.POST.get('brandurl')
+    return HttpResponse(scrapcomponents(brand_url))
 
 
 
@@ -212,33 +211,35 @@ def components_in_details(url):
     page = rqst.urlopen(url)
     soup = BeautifulSoup(page, "html.parser")
 
-    container = soup.find("div", {"class": "row clearfix"})
-    main_container = container.findAll("div", {"class": "col-md-6"})
-    img = main_container[0].find(class_="images product-images").find('a')
-    # print(img['href'])
-    name = main_container[1].find(class_="product-short-info").find('h1').get_text()
-    # print(name)
-    price = main_container[1].find(class_="product-short-info").find(class_="product-info-data product-price").get_text()
-    ul = main_container[1].find(class_="short-description").find('ul')
+    container = soup.find("div", {"class": "col-md-5 left"})
+    img_container = container.find("div", {"class": "product-img-holder"})
+    img = img_container.find(class_="main-img")['src']
+    print(img)
+    name = soup.find("div",{"class": "product-short-info"}).find("h1", {"class": "product-name"}).get_text()
+    print(name)
+    price = soup.find("div", {"class": "product-price-options"}).find(class_="price").get_text()
+    ul = soup.find("div",{"class": "full-description"}).find('ul')
     features = []
+    desc = ""
     for lis in ul.findAll('li'):
-        features.append(lis.get_text())
-
-    description = soup.find("section", {"id": "description"})
+        features.append(lis.get_text()+"\n")
+        desc+=lis.get_text()+"\n"
+    print(features)
+    """description = soup.find("section", {"id": "description"})
     # desc = description.find('p').get_text()
     desc = description.find("div" , {"itemprop": "description"})
-    print(desc.get_text())
+    print(desc.get_text())"""
 
     # print(features)
     # mainjson = []
 
 
     con = {
-        "img": img['href'],
+        "img": img,
         "name": name,
         "price": price,
-        "features": features,
-        "description": desc.get_text()
+        "description": desc
+        # "description": desc.get_text()
     }
     # mainjson.append(con)
     

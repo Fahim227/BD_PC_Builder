@@ -91,27 +91,27 @@ def brands(request):
 
 
 
-@api_view(['POST'])
+# @api_view(['POST'])
 def brandsAndComponentsName(request):
-    burl = "https://"
+    """burl = "https://"
     name = request.POST.get('name')
     print(name)
     shopobj = Shopsinfo.objects.get(shopename=name)
     url = shopobj.shopaddress
     # url+="/pc-components/"
     # burl+=url
-    print(url)
-    # baseurl = "https://www.techlandbd.com/pc-components"
+    print(url)"""
+    baseurl = "https://www.techlandbd.com/pc-components"
     tm = time.time()
-    req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+    req = Request(baseurl, headers={'User-Agent': 'Mozilla/5.0'})
     webpage = urlopen(req).read()
     soup = BeautifulSoup(webpage, "html.parser")
     # print(soup)
-    container = soup.find("div", {"class": "refine-categories refine-grid"})
-    list_of_components = container.find("div", {"class": "refine-items"}).findAll(class_="refine-item")
+    container = soup.find("div", {"class": "module-item module-item-c panel panel-active"})
+    list_of_components = container.find("div", {"class": "panel-collapse collapse in"}).find(class_="filter-radio").findAll("label")
     com_list = []
     for component in list_of_components:
-        name = component.find(class_="refine-name").get_text()
+        name = component.find(class_="links-text").get_text()
         url = component.find('a')['href']
         con = {
             "name": name,
